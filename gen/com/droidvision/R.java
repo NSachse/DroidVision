@@ -24,12 +24,7 @@ public final class R {
         public static final int total=0x7f020005;
     }
     public static final class id {
-        public static final int menu_settings=0x7f080005;
-        public static final int old_tv_view=0x7f080004;
-        public static final int trailer_1=0x7f080001;
-        public static final int trailer_2=0x7f080002;
-        public static final int trailers_wrapper=0x7f080000;
-        public static final int video_view=0x7f080003;
+        public static final int menu_settings=0x7f080000;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
