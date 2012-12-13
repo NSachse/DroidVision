@@ -1,21 +1,20 @@
 package com.droidvision.view;
 
 
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.Display;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.WindowManager;
 
 import com.droidvision.R;
+import com.droidvision.interfaces.FilmListener;
 import com.droidvision.model.Film;
 import com.droidvision.utils.DroidvisionApplication;
 
@@ -29,7 +28,6 @@ public class BookshelfView extends SurfaceView implements SurfaceHolder.Callback
     private float mLastTouchX;
     private float mLastTouchY;
     
-    private Display display;
     private ScaleGestureDetector mScaleDetector;
     private float mScaleFactor = 1.f;
     private MyThread thread;
@@ -40,7 +38,10 @@ public class BookshelfView extends SurfaceView implements SurfaceHolder.Callback
     private Film mFilm3;
     private static Bitmap mFilmPoster1;
     private static Bitmap mFilmPoster2;
-	
+    
+    private FilmListener listener;
+    
+    SurfaceView mSurfaceView;
 	public BookshelfView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
@@ -48,9 +49,7 @@ public class BookshelfView extends SurfaceView implements SurfaceHolder.Callback
 	public BookshelfView(Context context) {
 		super(context);
 		
-		// screen display
-		WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-		display = wm.getDefaultDisplay();
+		mSurfaceView = (SurfaceView) this;
 		
 		// Create our ScaleGestureDetector
 	    mScaleDetector = new ScaleGestureDetector(context, new ScaleListener());
@@ -83,9 +82,8 @@ public class BookshelfView extends SurfaceView implements SurfaceHolder.Callback
 	protected void onDraw(Canvas canvas) {
 	
 		if(canvas!=null){
-			canvas.drawColor(Color.LTGRAY);	
 			canvas.save();
-			canvas.scale((float) display.getWidth() / mBackground.getWidth(), (float) display.getHeight() / mBackground.getHeight());
+			canvas.scale((float) DroidvisionApplication.getScreenWidth() / mBackground.getWidth(), (float) DroidvisionApplication.getScreenHeight()/ mBackground.getHeight());
 			canvas.drawBitmap(mBackground, 0, 0, null);
 			canvas.restore();
 			
@@ -185,10 +183,14 @@ public class BookshelfView extends SurfaceView implements SurfaceHolder.Callback
 		    if(mFilm1.isActive()){
 	    	   mFilm1.setPosX(mPosX);
 	    	   mFilm1.setPosY(mPosY);
+	    	   if(isInserted(mPosY))
+	        		listener.filmIsInserted(mFilm1);
 	        }
 	       if(mFilm2.isActive()){
 	    	   mFilm2.setPosX(mPosX);
 	    	   mFilm2.setPosY(mPosY);
+	    	   if(isInserted(mPosY))
+	        		listener.filmIsInserted(mFilm2);
 	       }
 	       break;
 	    }
@@ -196,6 +198,13 @@ public class BookshelfView extends SurfaceView implements SurfaceHolder.Callback
 		return true;
 	}
 	
+	private boolean isInserted(float y) {
+		//Get the SurfaceView layout parameters
+	    android.view.ViewGroup.LayoutParams lp = mSurfaceView.getLayoutParams();
+
+		return y>lp.height;
+	}
+
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
@@ -203,8 +212,27 @@ public class BookshelfView extends SurfaceView implements SurfaceHolder.Callback
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
+			
+	    //Get the dimensions of the video (aprox value)
+	    int videoWidth = 200;
+	    int videoHeight = 200;
+
+	    //Get the width of the screen
+	    int screenWidth = DroidvisionApplication.getScreenWidth();
+
+	    //Get the SurfaceView layout parameters
+	    android.view.ViewGroup.LayoutParams lp = mSurfaceView.getLayoutParams();
+
+	    //Set the width of the SurfaceView to the width of the screen
+	    lp.width = screenWidth;
+
+	    //Set the height of the SurfaceView to match the aspect ratio of the video 
+	    lp.height = (int) (((float)videoHeight / (float)videoWidth) * (float)screenWidth);
+
 		thread.startrun(true);
-		thread.start();
+		// prevent to start a new thread when screen is draw again
+		if(!thread.isAlive())
+			thread.start();
 	}
 
 	@Override
@@ -267,5 +295,9 @@ public class BookshelfView extends SurfaceView implements SurfaceHolder.Callback
 
 	        return true;
 	    }
+	}
+
+	public void setListener(FilmListener listener) {
+		this.listener = listener;
 	}
 }
