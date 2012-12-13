@@ -1,10 +1,10 @@
 package com.droidvision.activities;
 
 
+
 import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MotionEvent;
@@ -16,24 +16,39 @@ import android.widget.VideoView;
 
 import com.droidvision.R;
 import com.droidvision.interfaces.FilmListener;
-import com.droidvision.model.Film;
+import com.droidvision.models.Film;
 import com.droidvision.utils.DroidvisionApplication;
-import com.droidvision.utils.StreamUtils;
-import com.droidvision.view.BookshelfView;
-import com.droidvision.view.MediaControllerView;
+import com.droidvision.views.BookshelfView;
+import com.droidvision.views.MediaControllerView;
 
+/**
+ * Activity class where all UI components are created
+ * All views are created programmatically enabling a higher control over different aspect ratio of devices
+ * 
+ * @author Nelson Sachse
+ * @version 1.0
+ *
+ */
 public class MainActivity extends Activity implements FilmListener{
 	public static VideoView mVideoView;
 	public static MediaController mediaController;
 	
+	private View staticView;
 	private RelativeLayout rootLayout;
 	private BookshelfView mBookshelfView;
 	private FilmListener listener;
+	private static int screenHeight;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		listener = this;
+		
+		// get screen variables
+		screenHeight = DroidvisionApplication.getScreenHeight();
+		
+		// listener
+		listener = (FilmListener) this;
+				
 		initLayout(R.layout.activity_main);
 	}
 
@@ -44,26 +59,28 @@ public class MainActivity extends Activity implements FilmListener{
 		LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
 		rootLayout = (RelativeLayout) inflater.inflate(layout, null);
 		
+		// create surface
 		mBookshelfView = new BookshelfView(getApplicationContext());
 		mBookshelfView.setListener(listener);
 		RelativeLayout.LayoutParams bookshelfParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 		mBookshelfView.setLayoutParams(bookshelfParams);
-		RelativeLayout viewHolder = new RelativeLayout(getApplicationContext());
 		
+		// create holder for the following views (tv + video view)
+		RelativeLayout viewHolder = new RelativeLayout(getApplicationContext());
 		RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 		layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM, RelativeLayout.TRUE);
 		viewHolder.setLayoutParams(layoutParams);
 
-		// create Video View
+		// create video View
 		mVideoView = new VideoView(getApplicationContext());
-		RelativeLayout.LayoutParams videoParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,(int)(DroidvisionApplication.getScreenHeight()/3));
-		videoParams.setMargins(20, 20, 70, 20);
+		RelativeLayout.LayoutParams videoParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,(int)(screenHeight/3));
+		videoParams.setMargins(40, 40, 90, 40);
 		videoParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 		mVideoView.setLayoutParams(videoParams);
+		// set custom media controller
 		mVideoView.setMediaController(new MediaControllerView(this));
-		mVideoView.setVideoURI(Uri.parse(StreamUtils.path1));
-		mVideoView.requestFocus();
-		viewHolder.addView(mVideoView);
+		mVideoView.setVisibility(View.INVISIBLE);
+		
 		// set touch to create a simpler UI to enable/disable the visualization of the video
 		mVideoView.setOnTouchListener(new OnTouchListener() {
 			
@@ -72,59 +89,55 @@ public class MainActivity extends Activity implements FilmListener{
 				int action = event.getAction();
 				
 				switch(action){
-				case MotionEvent.ACTION_DOWN:{
-		
+				case MotionEvent.ACTION_DOWN:
+					// Simple control to pause or resume the film player on touch
 					if(mVideoView.isPlaying()){
+						staticView.setVisibility(View.VISIBLE);
 						mVideoView.pause();
 					}else{
-						Log.w("event ", "touch"); 
+						staticView.setVisibility(View.INVISIBLE);
 						mVideoView.start();
 					}
-				}
-				
 				break;
 				}
 				return true;
 			}
 		});
 		
+		//static view
+		staticView = new View(getApplicationContext());
+		staticView.setBackgroundDrawable(getResources().getDrawable(R.drawable.static_img));
+		RelativeLayout.LayoutParams staticViewParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,300);
+		staticViewParams.setMargins(40, 0, 90, 90);
+		staticViewParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+		staticView.setLayoutParams(staticViewParams);
+		staticView.setVisibility(View.VISIBLE);
+		
+		
 		// create Tv layout
-		View tvImg = new View(getApplicationContext());
-		tvImg.setBackgroundDrawable(getResources().getDrawable(R.drawable.old_tv));
+		View tvView = new View(getApplicationContext());
+		tvView.setBackgroundDrawable(getResources().getDrawable(R.drawable.old_tv));
 		RelativeLayout.LayoutParams tvParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,(int)(DroidvisionApplication.getScreenHeight()/3));
 		tvParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-		tvImg.setLayoutParams(tvParams);
-		viewHolder.addView(tvImg);
-				
+		tvView.setLayoutParams(tvParams);
 		
-//		
-//		View trailer1 = (View) findViewById(R.id.trailer_1);
-//		trailer1.setOnClickListener(new OnClickListener() {
-//			
-//			@Override
-//			public void onClick(View v) {
-//				mVideoView.setVideoURI(Uri.parse(StreamUtils.path1));
-//				mVideoView.start();
-//			}
-//		});
-//		
-//		View trailer2 = (View) findViewById(R.id.trailer_2);
-//		trailer2.setOnClickListener(new OnClickListener() {
-//			
-//			@Override
-//			public void onClick(View v) {
-//				
-//			}
-//		});
-//	
+		// test view 
+		assert tvView!=null : "Invalided View";
+		assert mVideoView!=null : "Invalided View";
 		
+		// add views to the holder
+		viewHolder.addView(mVideoView);
+		viewHolder.addView(staticView);
+		viewHolder.addView(tvView);
 		
+		// add views to the parent view
 		rootLayout.addView(mBookshelfView);
 		rootLayout.addView(viewHolder);
-		setContentView(rootLayout);
 		
+		// set the content to display
+		setContentView(rootLayout);
 	}
-
+	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.activity_main, menu);
@@ -135,6 +148,8 @@ public class MainActivity extends Activity implements FilmListener{
 	public void filmIsInserted(Film film) {
 		mVideoView.setVideoURI(Uri.parse(film.getLink()));
 		mVideoView.start();
+		mVideoView.setVisibility(View.VISIBLE);
+		staticView.setVisibility(View.INVISIBLE);
 	}
 
 }

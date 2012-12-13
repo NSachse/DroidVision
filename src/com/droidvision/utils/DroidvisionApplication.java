@@ -10,10 +10,16 @@ import android.view.Display;
 import android.view.WindowManager;
 
 import com.droidvision.R;
-import com.droidvision.model.Film;
+import com.droidvision.models.Film;
 
+/**
+ * Class to obtain metrics use throughout the app and to initiliaze the data.
+ * 
+ * @author Nelson Sachse
+ * @version 1.0
+ *
+ */
 public class DroidvisionApplication extends Application{
-	public Object[] FilmsCollation;
 	public static ArrayList<Film> filmsList;
 	private static Bitmap posterImg;
 	private Display display;
@@ -28,8 +34,11 @@ public class DroidvisionApplication extends Application{
 		createContent();
 	}
 	
+	/**
+	 * Initialize the variables use throughout the application
+	 */
 	private void initVars(){
-		filmsList = new ArrayList<Film>(3);
+		filmsList = new ArrayList<Film>(2);
 
 		WindowManager wm = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
 		display = wm.getDefaultDisplay();
@@ -37,26 +46,33 @@ public class DroidvisionApplication extends Application{
 		mScreenHeight = display.getHeight();
 	}
 	
+	/**
+	 * Creates the content for the films and inserts them into the films list array
+	 */
 	private void createContent(){
-		Film f;
-		
 		posterImg = decodeResource(R.drawable.superman);
-		f = new Film("Superman", StreamUtils.path1, posterImg, 1);
-		filmsList.add(f);
+		filmsList.add(new Film("Superman", StreamUtils.path1, posterImg, 1));
 		
 		posterImg = decodeResource(R.drawable.total);
-		f = new Film("Total Recal", StreamUtils.path2, posterImg, 2);
-		filmsList.add(f);
+		filmsList.add(new Film("Total Recal", StreamUtils.path2, posterImg, 2));
 	}
 	
+	/**
+	 * Decode the resource to a bitmap
+	 * 
+	 * @param res
+	 * @return bitmap
+	 */
 	private Bitmap decodeResource(int res){
 		return BitmapFactory.decodeResource(getResources(),res);
 	}
 	
+	// screen width getter
 	public static int getScreenWidth(){
 		return mScreenWidth;
 	}
-	
+
+	// screen height getter
 	public static int getScreenHeight(){
 		return mScreenHeight;
 	}
