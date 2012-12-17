@@ -11,9 +11,10 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.droidvision.R;
+import com.droidvision.activities.DroidvisionApplication;
+import com.droidvision.debug.Debug;
 import com.droidvision.interfaces.FilmListener;
 import com.droidvision.models.Film;
-import com.droidvision.utils.DroidvisionApplication;
 
 /**
  * This view will allow the user to drag and drop the film to the player.
@@ -44,6 +45,9 @@ public class BookshelfView extends SurfaceView implements SurfaceHolder.Callback
     private static Bitmap mFilmPoster2;
     private FilmListener listener;
     
+    private static int screenHeight;
+    private static int screenWidth;
+    
     private static android.view.ViewGroup.LayoutParams mSurfaceParams;
     private SurfaceView mSurfaceView;
     
@@ -54,8 +58,12 @@ public class BookshelfView extends SurfaceView implements SurfaceHolder.Callback
 	public BookshelfView(Context context) {
 		super(context);
 		
-		// get instance of this view
+		// get instance of this surface
 		mSurfaceView = (SurfaceView) this;
+		
+		// get screen sizes
+		screenHeight = DroidvisionApplication.getScreenHeight();
+		screenWidth = DroidvisionApplication.getScreenWidth();
 		
 		// set mBackground
 		mBackground = BitmapFactory.decodeResource(getResources(), R.drawable.background);
@@ -94,7 +102,7 @@ public class BookshelfView extends SurfaceView implements SurfaceHolder.Callback
 		if(canvas!=null){
 			// draw background
 			canvas.save();
-			canvas.scale((float) DroidvisionApplication.getScreenWidth() / mBackground.getWidth(), (float) DroidvisionApplication.getScreenHeight()/ mBackground.getHeight());
+			canvas.scale((float) screenWidth / mBackground.getWidth(), (float) screenHeight/ mBackground.getHeight());
 			canvas.drawBitmap(mBackground, 0, 0, null);
 			canvas.restore();
 			
@@ -124,20 +132,18 @@ public class BookshelfView extends SurfaceView implements SurfaceHolder.Callback
 
 	        // Save the ID of this pointer
 	        mActivePointerId = event.getPointerId(0);
+	        Debug.show("ACTION_DOWN : "+mActivePointerId);
+	       
 	        
 	        if(touchSpecificView(mFilm1.getPosX(), mFilm1.getPosY())){
 	        	mFilm1.setActive(true);
 	        	mFilm1.setRestorePos(true);
-	        	mFilm1.setRestorePosX(mLastTouchX);
-	        	mFilm1.setRestorePosY(mLastTouchY);
 	        	
 	        	mFilm2.setActive(false);
 	        }else 
 	        	if(touchSpecificView(mFilm2.getPosX(), mFilm2.getPosY())){
 		        	mFilm2.setActive(true);
 		        	mFilm2.setRestorePos(true);
-		        	mFilm2.setRestorePosX(mLastTouchX);
-		        	mFilm2.setRestorePosY(mLastTouchY);
 		        	
 		        	mFilm1.setActive(false);
 	        }else{
@@ -179,49 +185,45 @@ public class BookshelfView extends SurfaceView implements SurfaceHolder.Callback
 	        float dx;
 	        float dy;
 
+    		dx = x - mLastTouchX;
+	    	dy = y - mLastTouchY;
+	    	
+	    	mPosX = x;
+		    mPosY = y;
 	        
-	        Log.w("mLastTouchX ~ ",""+mLastTouchX);
-	        
+		    mLastTouchX = x;
+        	mLastTouchY = y;
+        	
 		    if(mFilm1.isActive()){
-//		    	if(mFilm1.hasRestorePos()){
-//		    		dx = mFilm1.getRestorePosX();
-//			    	dy = mFilm1.getRestorePosY();	
-//		    	}else{
-		    		dx = x - mLastTouchX;
-			    	dy = y - mLastTouchY;
-//		    	}
-		    	
-	            mPosX += dx;
-		        mPosY += dy;
-	        
-		        mLastTouchX = x;
-	        	mLastTouchY = y;
-		    
-		    	mFilm2.setRestorePos(false);
+		    	if(mFilm1.hasRestorePos()){
+		    		mPosX = mFilm1.getRestorePosX();
+				    mPosY = mFilm1.getRestorePosY();	   
+		    	}
+		        
 		    	mFilm1.setPosX(mPosX);
 		    	mFilm1.setPosY(mPosY);
+		    	
+		    	mFilm1.setRestorePos(false);
+		    	mFilm1.setRestorePosX(mPosX);
+		    	mFilm1.setRestorePosY(mPosY);
+		    	
 		    	if(isInserted(mPosY)){
 		    		listener.filmIsInserted(mFilm1);
 		    	}
 	        }
-	       if(mFilm2.isActive()){
-//	    	   if(mFilm2.hasRestorePos()){
-//		    		dx = x - mFilm2.getRestorePosX();
-//			    	dy = y - mFilm2.getRestorePosY();	
-//		    	}else{
-		    		dx = x - mLastTouchX;
-			    	dy = y - mLastTouchY;
-//		    	}
+		    if(mFilm2.isActive()){
+	    	    if(mFilm2.hasRestorePos()){
+	    		   mPosX = mFilm2.getRestorePosX();
+			       mPosY = mFilm2.getRestorePosY();	   
+	    	    }
+	    	    
+	    	    mFilm2.setPosX(mPosX);
+		    	mFilm2.setPosY(mPosY);
+		    	
+		    	mFilm2.setRestorePos(false);   
+		    	mFilm2.setRestorePosX(mPosX);
+		    	mFilm2.setRestorePosY(mPosY);
 	    	   
-	           mPosX += dx;
-		       mPosY += dy;
-	        
-		       mLastTouchX = x;
-		       mLastTouchY = y;
-		       
-	    	   mFilm2.setRestorePos(false);
-	    	   mFilm2.setPosX(mPosX);
-	    	   mFilm2.setPosY(mPosY);
 	    	   if(isInserted(mPosY))
 	        		listener.filmIsInserted(mFilm2);
 	       }
@@ -254,7 +256,7 @@ public class BookshelfView extends SurfaceView implements SurfaceHolder.Callback
 		//Get the SurfaceView layout parameters
 		mSurfaceParams = mSurfaceView.getLayoutParams();
 
-		return y>mSurfaceParams.height;
+		return y>(mSurfaceParams.height/3);
 	}
 
 	@Override
@@ -265,16 +267,13 @@ public class BookshelfView extends SurfaceView implements SurfaceHolder.Callback
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
 			
-	    //Get the dimensions of the video (aprox value)
-	    int videoWidth = 400;
-	    int videoHeight = 400;
+	    //Get the dimensions of the video
+	    int videoWidth = screenWidth;
+	    int videoHeight = (screenHeight-screenHeight/3);
 
 	    //Get the SurfaceView layout parameters
 	  	mSurfaceParams = mSurfaceView.getLayoutParams();
-	  		
-	    //Get the width of the screen
-	    int screenWidth = DroidvisionApplication.getScreenWidth();
-
+	  	
 	    //Set the width of the SurfaceView to the width of the screen
 	    mSurfaceParams.width = screenWidth;
 

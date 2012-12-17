@@ -1,7 +1,5 @@
 package com.droidvision.models;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import android.graphics.Bitmap;
 
 /**

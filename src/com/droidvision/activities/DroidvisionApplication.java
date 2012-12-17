@@ -1,9 +1,10 @@
-package com.droidvision.utils;
+package com.droidvision.activities;
 
 import java.util.ArrayList;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.view.Display;
@@ -11,6 +12,7 @@ import android.view.WindowManager;
 
 import com.droidvision.R;
 import com.droidvision.models.Film;
+import com.droidvision.utils.StreamUtils;
 
 /**
  * Class to obtain metrics use throughout the app and to initiliaze the data.
@@ -23,6 +25,7 @@ public class DroidvisionApplication extends Application{
 	public static ArrayList<Film> filmsList;
 	private static Bitmap posterImg;
 	private Display display;
+	private static Resources resources;
 	private static int mScreenWidth;
 	private static int mScreenHeight;
 	
@@ -38,6 +41,7 @@ public class DroidvisionApplication extends Application{
 	 * Initialize the variables use throughout the application
 	 */
 	private void initVars(){
+		resources = getResources();
 		filmsList = new ArrayList<Film>(2);
 
 		WindowManager wm = (WindowManager) getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
@@ -63,8 +67,8 @@ public class DroidvisionApplication extends Application{
 	 * @param res
 	 * @return bitmap
 	 */
-	private Bitmap decodeResource(int res){
-		return BitmapFactory.decodeResource(getResources(),res);
+	private static Bitmap decodeResource(int res){
+		return BitmapFactory.decodeResource(resources,res);
 	}
 	
 	// screen width getter

@@ -12,12 +12,13 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.MediaController;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.droidvision.R;
 import com.droidvision.interfaces.FilmListener;
 import com.droidvision.models.Film;
-import com.droidvision.utils.DroidvisionApplication;
+import com.droidvision.utils.ConnectionBroadcastHelper;
 import com.droidvision.views.BookshelfView;
 import com.droidvision.views.MediaControllerView;
 
@@ -74,7 +75,7 @@ public class MainActivity extends Activity implements FilmListener{
 		// create video View
 		mVideoView = new VideoView(getApplicationContext());
 		RelativeLayout.LayoutParams videoParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,(int)(screenHeight/3));
-		videoParams.setMargins(40, 40, 90, 40);
+		videoParams.setMargins(40, 0, 90, 40);
 		videoParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 		mVideoView.setLayoutParams(videoParams);
 		// set custom media controller
@@ -107,8 +108,8 @@ public class MainActivity extends Activity implements FilmListener{
 		//static view
 		staticView = new View(getApplicationContext());
 		staticView.setBackgroundDrawable(getResources().getDrawable(R.drawable.static_img));
-		RelativeLayout.LayoutParams staticViewParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,300);
-		staticViewParams.setMargins(40, 0, 90, 90);
+		RelativeLayout.LayoutParams staticViewParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,(int)(screenHeight/4));
+		staticViewParams.setMargins(10, 0, 10, 40);
 		staticViewParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 		staticView.setLayoutParams(staticViewParams);
 		staticView.setVisibility(View.VISIBLE);
@@ -117,7 +118,7 @@ public class MainActivity extends Activity implements FilmListener{
 		// create Tv layout
 		View tvView = new View(getApplicationContext());
 		tvView.setBackgroundDrawable(getResources().getDrawable(R.drawable.old_tv));
-		RelativeLayout.LayoutParams tvParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,(int)(DroidvisionApplication.getScreenHeight()/3));
+		RelativeLayout.LayoutParams tvParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,(int)(screenHeight/3));
 		tvParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 		tvView.setLayoutParams(tvParams);
 		
@@ -146,10 +147,15 @@ public class MainActivity extends Activity implements FilmListener{
 
 	@Override
 	public void filmIsInserted(Film film) {
-		mVideoView.setVideoURI(Uri.parse(film.getLink()));
-		mVideoView.start();
-		mVideoView.setVisibility(View.VISIBLE);
-		staticView.setVisibility(View.INVISIBLE);
+		if(ConnectionBroadcastHelper.hasValidConnection(getApplicationContext())){
+			mVideoView.setVideoURI(Uri.parse(film.getLink()));
+			mVideoView.start();
+			mVideoView.setVisibility(View.VISIBLE);
+			staticView.setVisibility(View.INVISIBLE);	
+		}else{
+			Toast.makeText(getApplicationContext(), "No Connectivity", Toast.LENGTH_SHORT).show();
+		}
+		
 	}
 
 }
