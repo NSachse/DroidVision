@@ -5,8 +5,8 @@ The objective in this project is to get a simple UI where the user could easily 
 
 Project
 -------
-In this project it's been use a SurfaceView to draw all the bitmap objects from the film class and a VideoView to obtain the stream of the video.<br>
-Since isn't possible to overlay the VideoView over the SurfaceView, the trick is to get the height of the screen dinamically and award 2/3 of that size to the surface and the rest to the VideoView.<br>
+In this project I used a SurfaceView to draw all the bitmap objects from the film class and a VideoView to obtain the stream.<br>
+Since isn't possible to overlay the VideoView over the SurfaceView, the trick is to get the height of the screen dynamically and award 2/3 of that size to the surface and the rest to the VideoView.<br>
 
 Instalation and Tested
 ----------------------
